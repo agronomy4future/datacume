@@ -1,0 +1,78 @@
+#' Compute Cumulative Summaries of Grouped Data
+#'
+#' This function calculates cumulative sums of one or more numeric response
+#' variables over a specified time variable, within groups defined by one or
+#' more grouping variables.
+#'
+#' @param data A data frame containing the data to summarize.
+#' @param group_vars A character vector of column names to group by
+#'   (e.g., c("Treatment", "Block", "Plant")).
+#' @param time_var A bare column name representing the time variable
+#'   along which cumulative sums are calculated.
+#' @param response_vars A character vector of numeric column names to
+#'   summarize and cumulate.
+#'
+#' @return A tibble containing the grouping variables, time variable,
+#'   mean of each response variable, and cumulative sums of each response
+#'   variable named as "Cumulative_<response_var>".
+#' @export
+#'
+#' @examples
+#'
+#'#data example
+#' df= data.frame(
+#'     Treatment= rep(c("Tr1", "Tr2"), each= 15L),
+#'     Block= rep(rep(c("I", "II", "III"), 2), each= 5L),
+#'     Days= rep(c(35, 41, 48, 55, 63), 6),
+#'     yield= c(
+#'     46.83, 62.37, 65.66, 70.44, 73.43, 46.47, 50.1, 59.74,
+#'     65.83, 73.11, 33.21, 50.07, 71.22, 77.95, 80.07, 36.71,
+#'     45.25, 70.67, 72.07, 76.35, 42.99, 54.95,
+#'     56.82, 69.12, 71.01, 36.66, 59.95, 66.39, 70.47, 75.94),
+#'     biomass= c(
+#'     36.72, 52.43, 65.25, 69.45, 74.25, 45.48, 50.25, 61.25,
+#'     68.25, 73.86, 33.56, 52.02, 71.14, 79.41, 82.41, 37.78,
+#'     58.77, 70.17, 77.82, 79.1, 42.85, 53.6, 61.05, 65.43,
+#'     78.91, 39.73, 57.42, 61.18, 65.77, 74.53))
+#'
+#'#installing package
+#' if(!require(remotes)) install.packages("remotes")
+#' if (!requireNamespace("datacume", quietly= TRUE)) {
+#'   remotes::install_github("agronomy4future/datacume", force= TRUE)
+#' }
+#' library(remotes)
+#' library(datacume)
+#'
+#'#run the package
+#' if(!require(dplyr)) install.packages("dplyr")
+#' library(dplyr)
+#'
+#' df1= datacume(
+#'        data= df,
+#'        group_vars= c("Treatment", "Block"),
+#'        time_var= Days,
+#'        response_vars= c("yield", "biomass")
+#' )
+#'
+#'#data summary
+#' summary=data.frame(df1 %>%
+#'         group_by(Treatment, Days) %>%
+#'         dplyr::summarize(across(c(yield, biomass),
+#'          .fns=list(Mean=~mean(., na.rm= TRUE),
+#'            SD=~sd(., na.rm= TRUE),
+#'             n=~length(.),
+#'            se=~sd(.,na.rm= TRUE) / sqrt(length(.))))))%>%
+#'  ungroup()
+#'
+#' *Github: https://github.com/agronomy4future/datacume
+#'
+datacume= function(data, group_vars, time_var, response_vars) {
+  data %>%
+    dplyr::arrange(dplyr::across(c(dplyr::all_of(group_vars), {{ time_var }}))) %>%
+    dplyr::group_by(dplyr::across(c(dplyr::all_of(group_vars), {{ time_var }}))) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(response_vars), ~ mean(.x, na.rm = TRUE)),
+                     .groups = "drop_last") %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) %>%
+    dplyr::mutate(dplyr::across(dplyr::all_of(response_vars), cumsum, .names = "Cumulative_{.col}")) %>%
+    dplyr::ungroup()
+}

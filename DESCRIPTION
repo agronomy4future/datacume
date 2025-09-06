@@ -1,0 +1,12 @@
+Package: datacume
+Title: Compute Cumulative Summaries of Grouped Data
+Version: 0.0.0.9000
+Authors@R: 
+  person("JK", "Kim", email = "kimjk@agronomy4future.com", role = c("aut", "cre"))
+Description: This function calculates cumulative sums of one or more numeric 
+  response variables over a specified time variable, within groups defined by 
+  one or more grouping variables.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
