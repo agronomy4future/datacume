@@ -9,7 +9,7 @@ The goal of the datacume package is to compute cumulative summaries of grouped d
 
 ## Installation
 
-You can install datacooks() like so:
+You can install datacume() like so:
 
 Before installing, please download Rtools (https://cran.r-project.org/bin/windows/Rtools)
 
